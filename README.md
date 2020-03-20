@@ -1,5 +1,5 @@
 # lsqlsq
 
-Hi everyone!
+this is the file of oj excercise to make progress
 
-I want to learn knowledge from you!
+hope i can reach a higher stage
