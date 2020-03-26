@@ -14,8 +14,7 @@ public:
     } //进入栈顶
     char pop()
     {
-        if (!empty())
-            return data[ptr--];
+        return data[ptr--];
     }                                //退出栈顶
     char top() { return data[ptr]; } //返回栈顶值
     bool empty() { return ptr == -1; }
@@ -39,34 +38,50 @@ int main()
                 s.push(c);
             else
             {
-                if ((c - s.top()) == 1 || (c - s.top()) == 2)
+                if (s.empty())
+                    s.push(c);
+                else if ((c - s.top()) == 1 || (c - s.top()) == 2)
                     s.pop();
                 else
-                {
                     s.push(c);
-                }
             }
             break;
         case 2:
-            switch (temp.top())
-            {
-            case ')':
-                s.push('(');
-                temp.pop();
-                break;
-            case ']':
-                s.push('[');
-                temp.pop();
-                break;
-            case '}':
-                s.push('{');
-                temp.pop();
-                break;
-            default:
-                s.pop();
-                temp.pop();
-                break;
-            }
+            if (!temp.empty())
+                switch (temp.top())
+                {
+                case ')':
+                    if (s.empty() || s.top() != ')')
+                        s.push('(');
+                    else
+                    {
+                        s.pop();
+                    }
+                    temp.pop();
+                    break;
+                case ']':
+                    if (s.empty() || s.top() != ']')
+                        s.push('[');
+                    else
+                    {
+                        s.pop();
+                    }
+                    temp.pop();
+                    break;
+                case '}':
+                    if (s.empty() || s.top() != '}')
+                        s.push('{');
+                    else
+                    {
+                        s.pop();
+                    }
+                    temp.pop();
+                    break;
+                default:
+                    s.pop();
+                    temp.pop();
+                    break;
+                }
             break;
         case 3:
             cout << temp.top() << endl;
