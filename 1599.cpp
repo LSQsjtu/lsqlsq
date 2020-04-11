@@ -1,31 +1,32 @@
 #include <iostream>
 using namespace std;
+template <class T>
 class Stack
 {
 public:
-    char *data;
+    T *data;
     int ptr; //栈顶
-    Stack(int len) : data(new char[len]), ptr(-1) {}
+    Stack(int len) : data(new T[len]), ptr(-1) {}
     ~Stack() { delete[] data; }
-    void push(const char &d)
+    void push(const T &d)
     {
         ++ptr;
         data[ptr] = d;
     } //进入栈顶
-    char pop()
+    T pop()
     {
         return data[ptr--];
-    }                                //退出栈顶
-    char top() { return data[ptr]; } //返回栈顶值
-    bool empty() { return ptr == -1; }
+    }                             //退出栈顶
+    T top() { return data[ptr]; } //返回栈顶值
+    bool isEmpty() { return ptr == -1; }
 };
 int main()
 {
     int n, a;
     char c;
     cin >> n;
-    Stack s(n);
-    Stack temp(n);
+    Stack<char> s(n);
+    Stack<char> temp(n);
     for (int i = 0; i < n; i++)
     {
         cin >> a;
@@ -38,7 +39,7 @@ int main()
                 s.push(c);
             else
             {
-                if (s.empty())
+                if (s.isEmpty())
                     s.push(c);
                 else if ((c - s.top()) == 1 || (c - s.top()) == 2)
                     s.pop();
@@ -47,11 +48,11 @@ int main()
             }
             break;
         case 2:
-            if (!temp.empty())
+            if (!temp.isEmpty())
                 switch (temp.top())
                 {
                 case ')':
-                    if (s.empty() || s.top() != ')')
+                    if (s.isEmpty() || s.top() != ')')
                         s.push('(');
                     else
                     {
@@ -60,7 +61,7 @@ int main()
                     temp.pop();
                     break;
                 case ']':
-                    if (s.empty() || s.top() != ']')
+                    if (s.isEmpty() || s.top() != ']')
                         s.push('[');
                     else
                     {
@@ -69,7 +70,7 @@ int main()
                     temp.pop();
                     break;
                 case '}':
-                    if (s.empty() || s.top() != '}')
+                    if (s.isEmpty() || s.top() != '}')
                         s.push('{');
                     else
                     {
@@ -87,7 +88,7 @@ int main()
             cout << temp.top() << endl;
             break;
         case 4:
-            if (s.empty())
+            if (s.isEmpty())
                 cout << "YES" << endl;
             else
             {
