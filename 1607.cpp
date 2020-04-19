@@ -73,22 +73,7 @@ int main()
     for (int i = 0; i < q; i++)
     {
         cin >> k;
-        if (k == 1)
-        {
-            if (head->naive.isEmpty())
-            {
-                cout << -1 << '\n';
-            }
-            else
-            {
-                cout << head->naive.deQueue() << '\n';
-                if (head->naive.isEmpty())
-                {
-                    head = head->next;
-                }
-            }
-        }
-        else
+        if (k == 0)//oj上只能判断0
         {
             if (j >= n)
             {
@@ -111,6 +96,21 @@ int main()
                 p->naive.enQueue(j + 1);
             }
             j++;
+        }
+        else
+        {
+            if (head->naive.isEmpty())
+            {
+                cout << -1 << '\n';
+            }
+            else
+            {
+                cout << head->naive.deQueue() << '\n';
+                if (head->naive.isEmpty())
+                {
+                    head = head->next;
+                }
+            }
         }
     }
  

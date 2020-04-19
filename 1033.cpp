@@ -1,403 +1,182 @@
-#include <iostream>
 #include <cmath>
 #include <cstring>
-
+#include <iostream>
 using namespace std;
-long long zhongnum = 0, houzhuinum = 0, myStacknum = 0;
+//EXCEPTIONS
+struct ENOB {};
+struct EDIV {};
 
-void transfrom(char *input, long long *output, bool *cate)
-{
-    int j = 0;
-    for (int i = 0; i < strlen(input); i++)
-    {
-        j++;
-        if (input[i] == '-' && (i == 0 || (input[i - 1] != '+' && input[i - 1] != '-' && input[i - 1] != '*' && input[i - 1] != '/' && input[i - 1] != '^' && input[i - 1] != '(')))
-        {
-            output[++zhongnum] = 21;
-            cate[j] = true;
-        }
-        else if (input[i] == '+')
-        {
-            output[++zhongnum] = 20;
-            cate[j] = true;
-        }
-        else if (input[i] == '*')
-        {
-            output[++zhongnum] = 10;
-            cate[j] = true;
-        }
-        else if (input[i] == '/')
-        {
-            output[++zhongnum] = 11;
-            cate[j] = true;
-        }
-        else if (input[i] == '^')
-        {
-            output[++zhongnum] = 1;
-            cate[j] = true;
-        }
-        else if (input[i] == '(')
-        {
-            output[++zhongnum] = 0;
-            cate[j] = true;
-        }
-        else if (input[i] == ')')
-        {
-            output[++zhongnum] = 100;
-            cate[j] = true;
-        }
-        else //数
-        {
-            char temp[100] = "";
-            for (int t = 0;; i++, t++)
-            {
-                temp[t] = input[i];
-                temp[t + 1] = '\0';
-                if (!((input[i + 1] >= '0' && input[i + 1] <= '9') || input[i + 1] == '.'))
-                {
-                    break;
-                }
-            }
-            double getInt;
-            sscanf(temp, "%lf", &getInt);
-            output[++zhongnum] = getInt;
-            cate[j] = false;
-        }
-    }
-
-    //为^添加括号
-    for (int i = zhongnum; i >= 1; i--)
-    {
-        if (output[i] == '^' && cate[i])
-        {
-            int kl = 0, kr = 0;
-            for (int j = i - 1; j >= 1; j--)
-            {
-                if (output[j] == '(' && cate[j])
-                    kl++;
-                else if (output[j] == ')' && cate[j])
-                    kr++;
-                if (kl == kr)
-                {
-                    i++;
-                    for (int n = zhongnum; n >= j; n--)
-                    {
-                        output[n + 1] = output[n];
-                        cate[n + 1] = cate[n];
-                    }
-                    zhongnum++;
-                    output[j] = 0;
-                    cate[j] = true;
-                    break;
-                }
-            }
-            kl = 0, kr = 0;
-            for (int j = i + 1; j <= zhongnum; j++)
-            {
-                if (output[j] == 0 && cate[j])
-                    kl++;
-                else if (output[j] == 100 && cate[j])
-                    kr++;
-                if (kl == kr)
-                {
-                    j++;
-                    for (int n = zhongnum - 1; n >= j; n--)
-                    {
-                        output[n + 1] = output[n];
-                        cate[n + 1] = cate[n];
-                    }
-                    zhongnum++;
-                    output[j] = 100;
-                    cate[j] = true;
-                    break;
-                }
-            }
-        }
-    }
-}
-bool calHou(long long *houzhui, bool *cateHouzhui, long long &ans)
-{
-    bool isExist[100];
-    for (int i = 1; i <= houzhuinum; i++)
-        isExist[i] = true;
-
-    for (int i = 1; i <= houzhuinum; i++)
-    {
-        if (!isExist[i])
-            continue;
-        if (cateHouzhui[i] == true)
-        {
-            //分类
-            if (houzhui[i] == 1)
-            {
-                //不存在
-                isExist[i] = false;
-                long long a, b;
-                for (;; i--)
-                {
-                    if (isExist[i])
-                    {
-                        b = houzhui[i];
-                        isExist[i] = false;
-                        break;
-                    }
-                }
-                for (;; i--)
-                {
-                    if (isExist[i])
-                    {
-                        a = houzhui[i];
-                        break;
-                    }
-                }
-                if (a == 0 && b < 0)
-                    return -1;
-                houzhui[i] = pow(double(a), double(b));
-            }
-            else if (houzhui[i] == 10)
-            {
-                //不存在
-                isExist[i] = false;
-                long long a, b;
-                for (;; i--)
-                {
-                    if (isExist[i])
-                    {
-                        b = houzhui[i];
-                        isExist[i] = false;
-                        break;
-                    }
-                }
-                for (;; i--)
-                {
-                    if (isExist[i])
-                    {
-                        a = houzhui[i];
-                        break;
-                    }
-                }
-                houzhui[i] = a * b;
-            }
-            else if (houzhui[i] == 11)
-            {
-                //不存在
-                isExist[i] = false;
-                long long a, b;
-                for (;; i--)
-                {
-                    if (isExist[i])
-                    {
-                        b = houzhui[i];
-                        isExist[i] = false;
-                        break;
-                    }
-                }
-                for (;; i--)
-                {
-                    if (isExist[i])
-                    {
-                        a = houzhui[i];
-                        break;
-                    }
-                }
-                if (b == 0)
-                    return 0;
-                houzhui[i] = a / b;
-            }
-            else if (houzhui[i] == 20)
-            {
-                //不存在
-                isExist[i] = false;
-                long long a, b;
-                for (;; i--)
-                {
-                    if (isExist[i])
-                    {
-                        b = houzhui[i];
-                        isExist[i] = false;
-                        break;
-                    }
-                }
-                for (;; i--)
-                {
-                    if (isExist[i])
-                    {
-                        a = houzhui[i];
-                        break;
-                    }
-                }
-                houzhui[i] = a + b;
-            }
-            else if (houzhui[i] == 21)
-            {
-                //不存在
-                isExist[i] = false;
-                long long a, b;
-                for (;; i--)
-                {
-                    if (isExist[i])
-                    {
-                        b = houzhui[i];
-                        isExist[i] = false;
-                        break;
-                    }
-                }
-                for (;; i--)
-                {
-                    if (isExist[i])
-                    {
-                        a = houzhui[i];
-                        break;
-                    }
-                }
-                houzhui[i] = a - b;
-            }
-        }
-    }
-    ans = houzhui[1];
-    return 1;
-}
-bool cal(char *input, long long &ans)
-{
-    int kl = 0, kr = 0;
-
-    for (int i = 0; i < strlen(input); i++)
-    {
-        if (input[i] == '(')
-            kl++;
-        else if (input[i] == ')')
-            kr++;
-        if (kr > kl)
-            return 0;
-    }
-    if (kl != kr)
-        return 0;
-
-    long long zhongzhui[100];
-
-    long long houzhui[100];
-
-    bool houzhuiCate[100];
-    bool zhongzhuiCate[100];
-
-    transfrom(input, zhongzhui, zhongzhuiCate);
-
-    //栈表达式,转为后缀表达式
-    int myStack[100];
-
-    for (int i = 1; i <= zhongnum; i++)
-    {
-        //操作数
-        if (zhongzhuiCate[i] == false)
-        {
-            //塞入
-            houzhui[++houzhuinum] = zhongzhui[i];
-            houzhuiCate[houzhuinum] = false;
-        }
-        else
-        {
-            //符号
-            if (zhongzhui[i] == 0)
-            {
-                //入栈
-                myStack[++myStacknum] = 0;
-            }
-            else if (zhongzhui[i] == 100)
-            {
-                //出栈
-                long long tempStack[100];
-                tempStack[0] = 0;
-                for (int j = myStacknum; j > 0; j--)
-                {
-                    if (myStack[j] == 0)
-                    {
-                        myStacknum--;
-                        break;
-                    }
-                    tempStack[++tempStack[0]] = myStack[j];
-                    myStacknum--;
-                }
-                //塞入
-                for (int j = 1; j <= tempStack[0]; j++)
-                {
-                    houzhui[++houzhuinum] = tempStack[j];
-                    houzhuiCate[houzhuinum] = true;
-                }
-            }
-            else
-            {
-                long long temp[100];
-                temp[0] = 0;
-                for (; (zhongzhui[i] - myStack[myStacknum] > -5) && myStack[myStacknum] != 0;)
-                {
-                    temp[++temp[0]] = myStack[myStacknum--];
-                }
-
-                myStack[++myStacknum] = zhongzhui[i];
-
-                for (; temp[0] > 0;)
-                {
-                    houzhui[++houzhuinum] = temp[temp[0]--];
-                    houzhuiCate[houzhuinum] = true;
-                }
-            }
-        }
-    }
-
-    for (int i = myStacknum; i > 0; i--)
-    {
-        houzhui[++houzhuinum] = myStack[i];
-        houzhuiCate[houzhuinum] = true;
-    }
-
-    if (calHou(houzhui, houzhuiCate, ans))
-        return 1;
-    else
-        return 0;
-}
-
-int main()
-{
-    char input[100] = "";
-    char temp[100];
-    while (cin >> temp)
-    {
-        if (temp[0] == '-' && temp[1] >= 48 && temp[1] <= 57)
-        {
-            char temp1[100];
-            sprintf(temp1, "(%s)", temp);
-            strcat(input, temp1);
-        }
-        else
-            strcat(input, temp);
-        if (getchar() == '\n')
-            break;
-    }
-
-    char expr[101];
-    int j = 0;
-
-    if (input[0] == '-')
-    {
-        expr[0] = '0';
-        ++j;
-    }
-
-    for (int i = 0; i < 100; i++)
-    {
-        if (input[i] != ' ')
-        {
-            expr[j] = input[i];
-            j++;
-        }
-    }
-
+struct atoma {
+    //value:
+    // 1 2 3 4 5  6
+    // + - * / ^ (-)
+    //priority level:
+    // 00111000
+    //    |-----------  + - = 1, * / = 2 ^ = 3 - = 4
+    //        |-------- number of digit. (^ in 999-ans)
+    //   |-------------- bracketcount
+    bool isoperator;
     long long value;
+    int priority;
+};
+atoma ps[100];
+atoma zero{0, 0, 0};
+struct tree {
+    atoma& at;
+    tree* left;
+    tree* right;
+    tree(atoma& a, tree* l, tree* r) : at(a), left(l), right(r){};
+    ~tree() {
+        if (left != nullptr)
+            delete left;
+        if (right != nullptr)
+            delete right;
+    }
+};
+int read() {
+    char ch = 0;
 
-    if (cal(expr, value))
-        cout << value;
-    else
-        cout << "Error";
+    int
+        chcount    = 0,
+        bracket    = 0,
+        atomaplace = 0,
+        digit      = 0;
 
+    long long totalis = 0;
+    while (true) {
+        if (ch < '0' || ch > '9') {
+            if (digit) {
+                ps[atomaplace++] = atoma{false, totalis, 0};
+            }
+            digit   = 0;
+            totalis = 0;
+            switch (ch) {
+            case '+':
+                ps[atomaplace++] = atoma{true, 1, bracket * 100000 + 10000 + 1000 - chcount};
+                break;
+            case '-':
+                if (atomaplace == 0 || ps[atomaplace - 1].isoperator) {
+                    ps[atomaplace++] = atoma{true, 6, bracket * 100000 + 40000 + 1000 - chcount};
+                } else
+                    ps[atomaplace++] = atoma{true, 2, bracket * 100000 + 10000 + 1000 - chcount};
+                break;
+            case '*':
+                ps[atomaplace++] = atoma{true, 3, bracket * 100000 + 20000 + 1000 - chcount};
+                break;
+            case '/':
+                ps[atomaplace++] = atoma{true, 4, bracket * 100000 + 20000 + 1000 - chcount};
+                break;
+            case '^':
+                ps[atomaplace++] = atoma{true, 5, bracket * 100000 + 30000 + chcount};
+                break;
+            case '(':
+                bracket++;
+                break;
+            case ')':
+                if (bracket == 0)
+                    throw(ENOB());
+                bracket--;
+                break;
+            case '\n':
+                //!!!!!!I'm too foolish!
+                if (bracket != 0)
+                    throw(ENOB());
+                return atomaplace;
+            default:
+                break;
+            }
+            ch = getchar();
+            chcount++;
+        } else {
+            digit++;
+            totalis = totalis * 10 + (ch - '0');
+            ch      = getchar();
+            chcount++;
+        }
+    }
+}
+tree* search(int left, int right) {
+    if (left > right)
+        return new tree(zero, nullptr, nullptr);
+    if (left == right)
+        return new tree(ps[left], nullptr, nullptr);
+    int min = 1e9;
+    int loc = -1;
+    for (int i = left; i <= right; i++) {
+        if (ps[i].priority != 0 && ps[i].priority < min) {
+            loc = i;
+            min = ps[i].priority;
+        }
+    }
+    tree* lf = search(left, loc - 1);
+    tree* rt = search(loc + 1, right);
+    return new tree(ps[loc], lf, rt);
+}
+
+long long integerpow(long long base, long long power) {
+    long long ans = 1, tmp = base;
+    while (power > 0) {
+        if (power & 1)
+            ans *= tmp;
+        power >>= 1;
+        tmp *= tmp;
+    }
+    return ans;
+}
+
+tree* shorten(tree* root) {
+    if (!root->at.isoperator) {
+        return root;
+    }
+    shorten(root->left);
+    shorten(root->right);
+    switch (root->at.value) {
+    case 1:
+        root->at.value = root->left->at.value + root->right->at.value;
+        break;
+    case 2:
+        root->at.value = root->left->at.value - root->right->at.value;
+        break;
+    case 3:
+        root->at.value = root->left->at.value * root->right->at.value;
+        break;
+    case 4:
+        if (root->right->at.value == 0)
+            throw(EDIV());
+        root->at.value = root->left->at.value / root->right->at.value;
+        break;
+    case 6:
+        root->at.value = root->left->at.value - root->right->at.value;
+        break;
+    case 5:
+        if (root->right->at.value == 0)
+            throw(EDIV());
+        root->at.value = integerpow(root->left->at.value, root->right->at.value);
+        break;
+    }
+    root->at.isoperator = false;
+    root->at.priority   = 0;
+    delete root->left;
+    delete root->right;
+    root->left  = nullptr;
+    root->right = nullptr;
+    return root;
+}
+
+int main() {
+    int atomacount;
+    try {
+        atomacount = read();
+    } catch (ENOB) {
+        cout << "Error" << endl;
+        return 0;
+    }
+    tree* lg = search(0, atomacount - 1);
+    try {
+        cout << shorten(lg)->at.value << endl;
+    } catch (EDIV) {
+        cout << "Error" << endl;
+        return 0;
+    }
     return 0;
 }
