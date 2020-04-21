@@ -54,7 +54,7 @@ void branch_count(int pr1, int pr2, int po1, int po2)
     }
 }
 
-int cal(int n, int m)
+int cal(int n, int m)//排列组合
 {
     int a = n - m + 1, ans = 1;
     for (int i = 1; i <= m; i++)
