@@ -1,149 +1,162 @@
-#include <iostream>
-using namespace std;
+#include <cstdio>
+#include <cstring>
 
-char t[100005];
-void quickSort(char s[], int l, int r)
+char str[100010];
+int n, temp;
+struct node
 {
-    if (l < r)
-    {
-        int i = l, j = r;
-        char x = s[l];
-        while (i < j)
-        {
-            while (i < j && s[j] >= x) // 从右向左找第一个小于x的数
-                j--;
-            if (i < j)
-                s[i++] = s[j];
-            while (i < j && s[i] < x) // 从左向右找第一个大于等于x的数
-                i++;
-            if (i < j)
-                s[j--] = s[i];
-        }
-        s[i] = x;
-        quickSort(s, l, i - 1);
-        quickSort(s, i + 1, r);
-    }
+    int l, r, x, lazy;
+} data[30][400010];
+void build(int l, int r, int k, int op)
+{
+
+    data[op][k].l = l;
+    data[op][k].r = r;
+    data[op][k].x = 0;
+    data[op][k].lazy = -1;
+    if (l == r)
+        return;
+
+    int mid = (l + r) / 2;
+    build(l, mid, k * 2, op);
+    build(mid + 1, r, k * 2 + 1, op);
 }
-void fanquickSort(char s[], int l, int r)
+
+void pushdown(int k, int op)
 {
-    if (l < r)
+    if (data[op][k].lazy == -1)
+        return;
+    if (data[op][k].l == data[op][k].r)
+        return;
+
+    if (data[op][k].lazy == 0)
     {
-        int i = l, j = r;
-        char x = s[l];
-        while (i < j)
-        {
-            while (i < j && s[j] <= x) // 从右向左找第一个大于x的数
-                j--;
-            if (i < j)
-                s[i++] = s[j];
-            while (i < j && s[i] > x) // 从左向右找第一个小于等于x的数
-                i++;
-            if (i < j)
-                s[j--] = s[i];
-        }
-        s[i] = x;
-        fanquickSort(s, l, i - 1);
-        fanquickSort(s, i + 1, r);
+        data[op][k * 2].x = data[op][k * 2].lazy = 0;
+        data[op][k * 2 + 1].x = data[op][k * 2 + 1].lazy = 0;
     }
+    else
+    {
+        data[op][k * 2].x = data[op][k * 2].r - data[op][k * 2].l + 1;
+        data[op][k * 2 + 1].x = data[op][k * 2 + 1].r - data[op][k * 2 + 1].l + 1;
+        data[op][k * 2].lazy = data[op][k * 2 + 1].lazy = 1;
+    }
+    data[op][k].lazy = -1;
 }
-/*class intervalTree
+
+void modify(int l, int r, int k, int op)
 {
-public:
-    int l = 0, r = 0;
-    int lazy = 0;
-    intervalTree *lc = nullptr, *rc = nullptr;
 
-    void pushDown(intervalTree *x)
+    if (data[op][k].l == l && data[op][k].r == r)
     {
-        if (x->lazy != 0)
-        {
-            switch (x->lazy)
-            {
-            case 1:
-                fanquickSort(t, x->l, x->r);
-                break;
-            case -1:
-                quickSort(t, x->l, x->r);
-                break;
-            default:
-                break;
-            }
-            x->lc->lazy = x->lazy;
-            x->rc->lazy = x->lazy;
-            x->lazy = 0;
-        }
+        data[op][k].x = data[op][k].r - data[op][k].l + 1;
+        data[op][k].lazy = 1;
+        return;
     }
 
-    void build(intervalTree *x, int l, int r)
+    pushdown(k, op);
+
+    int mid = (data[op][k].l + data[op][k].r) / 2;
+
+    if (r <= mid)
+        modify(l, r, k * 2, op);
+    else if (l > mid)
+        modify(l, r, k * 2 + 1, op);
+    else
     {
-        x->l = l;
-        x->r = r;
-        if (l == r)
-        {
-            return;
-        }
-        int mid = (l + r) / 2;
-        x->lc = new intervalTree;
-        x->rc = new intervalTree;
-        build(x->lc, l, mid);
-        build(x->rc, mid + 1, r);
+        modify(l, mid, k * 2, op);
+        modify(mid + 1, r, k * 2 + 1, op);
     }
 
-    void modify(intervalTree *x, int l, int r, int c)
-    {
-        if (x->l >= l && x->r <= r)
-        {
-            x->lazy = c;
-            return;
-        }
-        pushDown(x);
-        int mid = (x->l + x->r) / 2;
-        if (l <= mid)
-            modify(x->lc, l, r, c);
-        if (r > mid)
-            modify(x->rc, l, r, c);
-    }
-    void query(intervalTree *x)
-    {
-        if(x->lazy==0)
-        {
-            query(x->lc);
-            query(x->rc);
-        }
-    }
-};*/
+    data[op][k].x = data[op][k * 2].x + data[op][k * 2 + 1].x;
+}
 
+void search(int l, int r, int k, int op)
+{
+
+    if (data[op][k].l == l && data[op][k].r == r)
+    {
+        temp += data[op][k].x;
+
+        data[op][k].lazy = 0;
+        return;
+    }
+
+    pushdown(k, op);
+
+    int mid = (data[op][k].l + data[op][k].r) / 2;
+
+    if (r <= mid)
+        search(l, r, k * 2, op);
+    else if (l > mid)
+        search(l, r, k * 2 + 1, op);
+    else
+    {
+        search(l, mid, k * 2, op);
+        search(mid + 1, r, k * 2 + 1, op);
+    }
+
+    data[op][k].x = data[op][k * 2].x + data[op][k * 2 + 1].x;
+}
+void init()
+{
+    int i;
+    scanf("%s", str);
+    for (i = 0; i < 26; i++)
+        build(1, n, 1, i);
+    for (i = 0; i < n; i++)
+        modify(i + 1, i + 1, 1, str[i] - 'a');
+}
 int main()
 {
-    int n, q;
-    ios::sync_with_stdio(false);
-    cin.tie(0);
-    cout.tie(0);
-    cin >> n >> q;
-    //intervalTree a;
-    for (int i = 1; i <= n; ++i)
-        cin >> t[i];
-   // a.build(&a, 1, n);
-    while (q--)
+    int m, a, b, c, i, j, k;
+    int mark[30];
+    scanf("%d%d", &n, &m);
+    init();
+
+    while (m--)
     {
-        int x, l, r;
-        cin >> l >> r >> x;
-        switch (x)
+        scanf("%d%d%d", &a, &b, &c);
+        memset(mark, 0, sizeof(mark));
+        for (i = 0; i < 26; i++)
         {
-        case 0:
-            //a.modify(&a, l, r, 1);
-            fanquickSort(t, l, r);
-            break;
-        case 1:
-           // a.modify(&a, l, r, -1);
-           quickSort(t, l, r);
-            break;
-        default:
-            break;
+            temp = 0;
+            search(a, b, 1, i); // 查找区间内i字母出现的次数，并清空
+            mark[i] += temp;
+        }
+        if (c == 0)
+        {
+            k = a;
+            for (i = 25; i >= 0; i--)
+                if (mark[i] != 0)
+                {
+                    modify(k, k + mark[i] - 1, 1, i); // 更新区间字母
+                    k += mark[i];
+                }
+        }
+        else
+        {
+            k = a;
+            for (i = 0; i < 26; i++)
+                if (mark[i] != 0)
+                {
+                    modify(k, k + mark[i] - 1, 1, i);
+                    k += mark[i];
+                }
         }
     }
-    //a.query(&a);
-    for (int i = 1; i <= n; ++i)
-        cout << t[i];
+    for (i = 1; i <= n; i++)
+    {
+        for (j = 0; j < 26; j++)
+        {
+            temp = 0;
+            search(i, i, 1, j);
+            if (temp != 0)
+            {
+                printf("%c", j + 'a');
+                break;
+            }
+        }
+    }
+    printf("\n");
     return 0;
 }
