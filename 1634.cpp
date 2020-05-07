@@ -1,16 +1,69 @@
 #include <cstdio>
-int heapBuild(int a[],int root,int len)
+struct node
 {
-int lchild=2*root+1;
-if(lchild<len)
-{
-    int max=lchild,rchild=lchild+1;
-}
-}
+    node *next = nullptr, *last = nullptr;
+    int data = 0;
+};
 
-int heapSort(int a[],int len)
+int push(int a[], int now)
 {
-
+    int sum = 0;
+    while (now > 0)
+    {
+        ++sum;
+        if (a[now] < a[(now - 1) / 2])//向上过滤
+        {
+            int tmp = a[now];
+            a[now] = a[(now - 1) / 2];
+            a[(now - 1) / 2] = tmp;
+            now = (now - 1) / 2;
+        }
+        else
+            break;
+    }
+    return sum;
+}
+int pop(int a[], int length)
+{
+    int sum = 0;
+    a[0] = a[length];
+    int hole = 0;
+    while (2 * hole + 1 < length)
+    {
+        int child = 2 * hole + 1;
+        if (2 * hole + 2 < length)
+        {
+            ++sum;
+            if (a[2 * hole + 2] < a[2 * hole + 1])
+                ++child;
+        }
+        ++sum;
+        if (a[child] < a[hole])
+        {
+            int tmp = a[child];
+            a[child] = a[hole];
+            a[hole] = tmp;
+            hole = child;
+        }
+        else
+            break;
+    }
+    return sum;
+}
+int heapSort(int a[], int len)
+{
+    int sum = 0;
+    int *heapdata = new int[len];
+    for (int i = 0; i < len; ++i)
+    {
+        heapdata[i] = a[i];
+        sum += push(heapdata, i);
+    }
+    for (int i = 0; i < len; ++i)
+    {
+        sum += pop(heapdata, len - i - 1);
+    }
+    return sum;
 }
 
 int merge(int *arr, int l, int mid, int r)
@@ -49,39 +102,23 @@ int mergeSort(int *a, int l, int r)
     return sum;
 }
 
-int quickSort(int s[], int l, int r)
+long long quickSort(int s[], int len)
 {
-    int sum = 0;
-    if (l < r)
+    long long sum = 0;
+    node *root = new node[len + 2];
+    for (int i = 1; i <= len + 1; i++)
     {
-        int i = l, j = r, x = s[l];
-        while (i < j)
-        {
-            while (i < j && s[j] >= x) // 从右向左找第一个小于x的数
-            {
-                sum++;
-                j--;
-            }
-            if (i < j)
-            {
-                sum++;
-                s[i++] = s[j];
-            }
-            while (i < j && s[i] <= x) // 从左向右找第一个大于x的数
-            {
-                sum++;
-                i++;
-            }
-            if (i < j)
-            {
-                sum++;
-                s[j--] = s[i];
-            }
-        }
-        s[i] = x;
-        sum += quickSort(s, l, i - 1);
-        sum += quickSort(s, i + 1, r);
+        root[i - 1].next = &root[i];
+        root[i].last = &root[i - 1];
+        root[i].data = i;
     }
+    for (int i = len - 1; i >= 0; i--)
+    {
+        sum += root[s[i]].next->data - root[s[i]].last->data - 2;
+        root[s[i]].last->next = root[s[i]].next;
+        root[s[i]].next->last = root[s[i]].last;
+    }
+
     return sum;
 }
 
@@ -94,16 +131,17 @@ int main()
     {
         scanf("%d", &a[i]);
     }
+
     switch (k)
     {
     case 1:
-        /* code */
+        printf("%d\n", heapSort(a, n));
         break;
     case 2:
         printf("%d\n", mergeSort(a, 0, n - 1));
         break;
     case 3:
-        printf("%d\n", quickSort(a, 0, n - 1));
+        printf("%lld\n", quickSort(a, n));
         break;
     default:
         break;
